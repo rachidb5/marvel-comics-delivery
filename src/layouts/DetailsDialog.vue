@@ -1,37 +1,55 @@
 <template>
-  <v-container class="fill-height">
-    <v-responsive class="d-flex align-center text-center fill-height">
-      <v-row>
-        <v-btn class="m-5">Ver detalhes</v-btn>
-        <v-btn class="m-5">Solicitar entrega</v-btn>
-      </v-row>
-    </v-responsive>
-  </v-container>
+  <div>
+    <v-card-title style="word-break: normal;">{{ comic.title }}</v-card-title>
+    <v-card-subtitle>$ {{ price.price }}</v-card-subtitle>
+    <v-row>
+      <v-col>
+        <v-card-text>{{ description.text }}</v-card-text>
+      </v-col>
+      <v-col>
+        <v-img
+          v-if="comic.thumbnail"
+          :src="`${comic.thumbnail.path}/portrait_incredible.${comic.thumbnail.extension}`"
+          height="250px"
+          class="white--text align-end mt-2 mb-2"
+        />
+      </v-col>
+    </v-row>
+  </div>
 </template>
 
 <script>
 import axios from "axios";
 
 export default {
-  name: "User",
+  setup() {},
+  props: {
+    comicId: { type: Number, required: true },
+  },
   data() {
     return {
-      comics: {},
+      comic: {},
+      dialog: false,
+      price: 0,
+      description: "",
     };
   },
   created() {
-    this.getComics();
-    console.log(this.comics);
+    this.getComicById();
   },
   methods: {
-    getComics() {
+    getComicById() {
       axios
         .get(
-          "http://gateway.marvel.com/v1/public/comics?ts=1&apikey=2640839b89de352c4d01bd80b90c95e4&hash=62860b4c147756bf75696318c158704b"
+          `http://gateway.marvel.com/v1/public/comics/${this.comicId}?ts=1&apikey=2640839b89de352c4d01bd80b90c95e4&hash=62860b4c147756bf75696318c158704b`
         )
         .then((res) => {
-          this.comics = res.data.data.results;
-          console.log(this.comics);
+          this.comic = res.data.data.results[0];
+          this.price = res.data.data.results[0].prices[0];
+          if(res.data.data.results[0].textObjects.length > 0){
+            this.description = res.data.data.results[0].textObjects[0];
+          }
+          console.log(this.comic);
         })
         .catch((error) => {
           console.log(error);
@@ -40,4 +58,5 @@ export default {
   },
 };
 //  http://gateway.marvel.com/v1/public/comics?ts=1&apikey=2640839b89de352c4d01bd80b90c95e4&hash=62860b4c147756bf75696318c158704b
+//`http://gateway.marvel.com/v1/public/comics/${this.comicId}?ts=1&apikey=2640839b89de352c4d01bd80b90c95e4&hash=62860b4c147756bf75696318c158704b`
 </script>
